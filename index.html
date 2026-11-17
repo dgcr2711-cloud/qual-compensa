@@ -286,14 +286,35 @@ function reportData(sessions,mk){
 }
 var NUMW={um:1,uma:1,dois:2,duas:2,tres:3,quatro:4,cinco:5,seis:6,sete:7,oito:8,nove:9,dez:10,onze:11,doze:12};
 function capFirst(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+var CONN={de:1,do:1,da:1,dos:1,das:1,com:1,por:1,e:1,ou:1,meio:1,meia:1,a:1,para:1,ate:1,no:1,na:1};
+var UNITW={kg:1,g:1,gr:1,grama:1,gramas:1,quilo:1,quilos:1,litro:1,litros:1,l:1,ml:1,mg:1,un:1,unidade:1,unidades:1};
+function isQ(w){var n=norm(w);return /^\d+([.,]\d+)?x?$/.test(n)||NUMW[n]!=null;}
+/* Ditado sem vírgulas (ex.: teclado do iPhone): corta a frase antes de cada nova quantidade */
+function splitQty(chunk){
+  var w=chunk.split(/\s+/),out=[],cur=[];
+  for(var i=0;i<w.length;i++){
+    var t=w[i];
+    if(cur.length&&isQ(t)){
+      var last=cur[cur.length-1],p=norm(last),nx=w[i+1]?norm(w[i+1]):'',cap=/^[A-ZÀ-Ý]/.test(t);
+      if(!CONN[p]&&!isQ(last)&&(!UNITW[nx]||cap)){out.push(cur.join(' '));cur=[];}
+    }
+    cur.push(t);
+  }
+  if(cur.length)out.push(cur.join(' '));
+  return out;
+}
 function parseSpoken(t){
-  var out=[];
-  String(t||'').replace(/\n/g,',').split(/\s*[,;]\s*|\s+e\s+|\s+mais\s+/i).forEach(function(p){
-    p=p.trim().replace(/[.!?]+$/,'').trim();if(!p)return;
-    var q=1,m=p.match(/^(\d+)\s*x?\s+(.+)$/i);
-    if(m&&!/^(kg|g|gr|l|ml|litros?|quilos?|gramas?)\b/i.test(m[2])){q=+m[1]||1;p=m[2];}
-    else{var w=p.split(/\s+/),nw=NUMW[norm(w[0])];if(nw!=null&&w.length>1){q=nw;p=w.slice(1).join(' ');}}
-    p=p.trim();if(p)out.push({name:capFirst(p),qty:q});
+  var out=[],fill=/^(comprar|compra|preciso de|preciso|quero|anota|anotar|adicionar|adiciona|lista de compras|lista)\s*:?\s+/i;
+  String(t||'').replace(/\n/g,',').split(/\s*[,;]\s*|\s+e\s+|\s+mais\s+/i).forEach(function(c){
+    c=c.trim().replace(fill,'');
+    splitQty(c).forEach(function(p){
+      p=p.trim().replace(/[.!?]+$/,'').replace(fill,'').trim();if(!p)return;
+      var q=1,w=p.split(/\s+/),m=p.match(/^(\d+)\s*x?\s+(.+)$/i);
+      if(m&&!UNITW[norm(m[2].split(/\s+/)[0])]){q=+m[1]||1;w=m[2].split(/\s+/);}
+      else if(w.length>1&&NUMW[norm(w[0])]!=null&&!UNITW[norm(w[1])]){q=NUMW[norm(w[0])];w=w.slice(1);}
+      while(w.length>1&&isQ(w[0])&&!UNITW[norm(w[1])])w.shift();
+      p=w.join(' ').trim();if(p)out.push({name:capFirst(p),qty:q});
+    });
   });
   return out;
 }
