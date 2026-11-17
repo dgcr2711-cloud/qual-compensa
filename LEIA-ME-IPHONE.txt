@@ -1,0 +1,8 @@
+QUAL COMPENSA? NO IPHONE (gratis, pelo Safari)
+1) Crie conta em https://github.com (gratis).
+2) Crie um repositorio PUBLICO chamado qual-compensa:  https://github.com/new
+3) Na pagina do repositorio: "uploading an existing file" -> arraste TODOS os arquivos desta pasta -> "Commit changes".
+4) Settings > Pages > Source: "Deploy from a branch" > Branch: main / (root) > Save.
+5) Espere 1 a 2 minutos. O endereco sera: https://SEU-USUARIO.github.io/qual-compensa/
+6) No iPhone abra esse endereco NO SAFARI > botao Compartilhar > "Adicionar a Tela de Inicio".
+Pronto: abre em tela cheia e funciona sem internet.
